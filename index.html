@@ -746,13 +746,19 @@ function renderLancamentos(){
     // Label diferente para Múltiplos vs Recorrente/Parcelada
     const labelGrupo=g.rec==="Múltiplos"?`${g.rows.length}× ${g.desc||g.cat}`:`${g.rows.length}× ${g.rec}`;
     
+    // Cor da categoria do grupo baseado em status
+    let catCorGrp="#c8c8d8";
+    let catPrefixoGrp="";
+    if(pagos===g.rows.length){catCorGrp="#3ecf8e";catPrefixoGrp="✓ ";}
+    else if(semBanco>0){catCorGrp="#fb923c";catPrefixoGrp="⏳ ";}
+    
     tbHtml+=`<tr class="row-grupo" data-uid="${uid}" style="background:#0d0d18;cursor:pointer" onclick="toggleGrupoLanc('${uid}',this)">
       <td style="color:#9d92f9;font-weight:700;white-space:nowrap"><span class="arrow-toggle">▶</span> ${labelGrupo}</td>
       <td>${statusBadge(g.tipo)}</td>
-      <td>${g.cat||""}</td>
-      <td style="color:#c8c8d8">${g.rec==="Múltiplos"?'<i style="color:#6b6b8a">(várias datas)</i>':g.desc||""}</td>
+      <td style="color:${catCorGrp};font-weight:700">${catPrefixoGrp}${g.cat||""}</td>
+      <td style="color:#c8c8d8">${g.rec==="Múltiplos"?'<i style="color:#6b6b8a">(várias datas)</i>':g.desc||""} ${semBanco>0?`<small style="color:#fb923c;font-weight:700;margin-left:6px">(${semBanco} a pagar)</small>`:''}</td>
       <td style="color:${isReceita?'#3ecf8e':'#f87171'};font-weight:700;white-space:nowrap">${isReceita?'+':'-'}R$ ${fmtNum(valorUnit)} <small style="color:#6b6b8a;font-weight:400">média</small><br><small style="color:#9d92f9;font-weight:600">Total: R$ ${fmtNum(totalValor)}</small></td>
-      <td>${badgeStatus}</td>
+      <td></td>
       <td></td>
     </tr>
     <tr id="${uid}" style="display:none"><td colspan="7" style="padding:0;background:#07070e"><table style="width:100%;border-collapse:collapse">
