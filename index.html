@@ -917,13 +917,23 @@ function atualizarDashFinancas(){
   set("f-apostas-lucro",(lucroApostas>=0?"+":"")+"R$ "+fmtNum(Math.abs(lucroApostas)),lucroApostas>=0?"green":"red");
   const saldoBancos=bancosData.reduce((s,r)=>s+(parseFloat(r[1])||0),0);
   set("f-bancos-saldo","R$ "+fmtNum(saldoBancos),"gold");
-  const hojeISO=new Date().toISOString().split("T")[0];
+  // Faturas: lançamentos com Cartão (col N=index 13) preenchido, não pagos
+  // Se tem filtro de mês: só desse mês. Sem filtro: todas em aberto.
   const faturasFuturas=financasData.filter(f=>{
-    const tipoRec=f[11]||"";
-    const dataF=dateKey(f[0]);
-    return tipoRec==="Parcelada"&&dataF>hojeISO;
+    const temCartao=(f[13]||"").trim()!=="";
+    if(!temCartao)return false;
+    const jaPago=(f[12]||"")==="Pago";
+    if(jaPago)return false;
+    if(filtroMes){
+      const m=normalizaMes(f[5],f[0]);
+      return m===filtroMes;
+    }
+    return true;
   }).reduce((s,f)=>s+(parseFloat(f[4])||0),0);
   set("f-faturas","R$ "+fmtNum(faturasFuturas),"orange");
+  // Sub-label do card
+  const subFaturas=document.getElementById("f-faturas-sub");
+  if(subFaturas)subFaturas.textContent=filtroMes?("em "+filtroMes):"todas em aberto";
   const totalMetas=metasData.filter(r=>(r[6]||"Ativa")==="Ativa").reduce((s,r)=>s+(parseFloat(r[2])||0),0);
   set("f-em-metas","R$ "+fmtNum(totalMetas),"blue");
   set("f-patrimonio","R$ "+fmtNum(patrimonio),"gold");
